@@ -101,8 +101,11 @@ router.delete('/delete', async (ctx) => {
 
 app.use(router.routes()).use(router.allowedMethods());
 
-app.listen(8090, () => {
-    console.log('server is running at http://localhost:8090');
+app.listen({
+    host: '0.0.0.0',
+    port: 8090,
+}, () => {
+    console.log('server is running at http://0.0.0.0:8090');
 })
 
 

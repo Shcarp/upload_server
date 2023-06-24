@@ -12,4 +12,9 @@
     "noEmit": true,
   },
   "include": ["src"],
+  "exclude": ["node_modules", "**/__tests__/*", "public"],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node",
+  }
 }

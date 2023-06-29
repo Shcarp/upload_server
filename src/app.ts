@@ -4,11 +4,11 @@ import qinue from "./upload";
 import koaBody from "koa-body";
 import path from "path";
 import fs from "fs";
-import request from "request";
+import axios from "axios";
 
 const app = new Koa();
 
-const POS = path.join(__dirname, "../cache")
+const POS = path.join(__dirname, "../cache");
 
 app.use(
     koaBody({
@@ -33,26 +33,20 @@ const handleDownload = (key: string) => {
         if (fs.existsSync(filePath)) {
             fs.readFile(filePath, (err, data) => {
                 if (err) {
-                    reject(err)
+                    reject(err);
                 }
-                resolve(data)
+                resolve(data);
             });
         } else {
             // 如果没有该文件，从七牛云下载
             try {
                 const link: string = await qinue.downloadFile(key);
-                request(link, {
-                    headers: {
-                        "Content-Type": "arraybuffer",
-                    },
-                }, (err, response) => {
-                    if (err) {
-                        reject(err)
-                    }
-                    resolve(response.body)
+                let res = await axios.get(link, {
+                    responseType: "arraybuffer",
                 });
+                resolve(res.data);
             } catch (error) {
-                reject(error)
+                reject(error);
             }
         }
     });
@@ -116,8 +110,8 @@ router.post("/upload", async (ctx) => {
     };
 });
 
-router.get("/download", async (ctx) => {
-    const { key } = ctx.query;
+router.get("/download/:key", async (ctx) => {
+    const { key } = ctx.params;
     if (!key) {
         ctx.status = 400;
         ctx.body = {
@@ -127,8 +121,9 @@ router.get("/download", async (ctx) => {
         return;
     }
     try {
-        const data = await handleDownload(key)
-        ctx.body = data
+        const data = await handleDownload(key);
+        console.log(data);
+        ctx.body = data;
     } catch (error) {
         ctx.status = 500;
         ctx.body = {
@@ -150,7 +145,7 @@ router.delete("/delete", async (ctx) => {
     }
     try {
         const res = await qinue.deleteFile(key);
-        ctx.body = res
+        ctx.body = res;
     } catch (error) {
         ctx.status = 500;
         ctx.body = {
